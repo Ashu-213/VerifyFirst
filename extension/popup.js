@@ -3,7 +3,7 @@
  * Reads from chrome.storage.session (written by background.js).
  */
 
-const BACKEND = "http://127.0.0.1:8000";
+const BACKEND = "https://verifyfirst.onrender.com";
 
 const CATEGORY_CONFIG = {
   safe: {

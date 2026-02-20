@@ -9,9 +9,9 @@
  *  5. Update badge
  */
 
-const BACKEND_URL = "http://127.0.0.1:8000";
+const BACKEND_URL = "https://verifyfirst.onrender.com";
 const ANALYZE_ENDPOINT = `${BACKEND_URL}/analyze`;
-const TIMEOUT_MS = 2000;
+const TIMEOUT_MS = 4000;
 
 // In-memory session cache (mirrors backend cache, avoids redundant calls)
 const sessionCache = new Map();

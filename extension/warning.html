@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VerifyFirst — Threat Detected</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Design Tokens ──────────────────────────────────────────────────── */
+    :root {
+      --bg-base:        #050a12;
+      --bg-panel:       #0b1220;
+      --bg-panel-edge:  #0f1928;
+      --accent-red:     #e5144b;
+      --accent-red-dim: #8c0929;
+      --accent-amber:   #f5a623;
+      --accent-blue:    #1a6fff;
+      --text-primary:   #e8edf5;
+      --text-muted:     #6a7a90;
+      --text-dim:       #3a4a5c;
+      --border:         #1a2840;
+      --border-hot:     #e5144b;
+      --mono:           'Share Tech Mono', 'Courier New', monospace;
+      --sans:           'Rajdhani', system-ui, sans-serif;
+      --radius:         4px;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Base ───────────────────────────────────────────────────────────── */
+    html, body {
+      height: 100%;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--sans);
+      overflow: hidden;
+    }
+
+    /* ── Background: geometric grid + radial burst ───────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(229,20,75,0.12) 0%, transparent 70%),
+        linear-gradient(rgba(26,40,64,0.35) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,40,64,0.35) 1px, transparent 1px);
+      background-size: auto, 48px 48px, 48px 48px;
+      pointer-events: none;
+    }
+
+    /* Corner accent lines */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        linear-gradient(135deg, rgba(229,20,75,0.06) 0%, transparent 40%),
+        linear-gradient(225deg, rgba(229,20,75,0.04) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────────────── */
+    .stage {
+      position: relative; z-index: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      gap: 0;
+    }
+
+    /* ── Orchestrated reveal animation ──────────────────────────────────── */
+    @keyframes vf-reveal {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes vf-pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(229,20,75,0); }
+      50%       { box-shadow: 0 0 0 6px rgba(229,20,75,0.15); }
+    }
+    @keyframes vf-scan-line {
+      from { transform: translateY(0); }
+      to   { transform: translateY(100%); }
+    }
+    @keyframes vf-badge-in {
+      0%   { transform: scale(0.4) rotate(-20deg); opacity: 0; }
+      70%  { transform: scale(1.1) rotate(3deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    @keyframes vf-number-count {
+      from { opacity: 0; letter-spacing: 8px; }
+      to   { opacity: 1; letter-spacing: 2px; }
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 620px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--border-hot);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      animation: vf-reveal 0.55s cubic-bezier(0.22,1,0.36,1) both,
+                 vf-pulse-border 3s ease-in-out 0.6s infinite;
+    }
+
+    /* Scan line effect on panel */
+    .panel::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(229,20,75,0.6), transparent);
+      animation: vf-scan-line 2s linear infinite;
+      pointer-events: none;
+    }
+
+    /* ── Panel header ────────────────────────────────────────────────────── */
+    .panel-header {
+      background: var(--bg-panel-edge);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: vf-reveal 0.55s 0.05s both;
+    }
+    .panel-header .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent-red);
+      box-shadow: 0 0 8px rgba(229,20,75,0.7);
+    }
+    .panel-header .dot:nth-child(2) { background: var(--accent-amber); box-shadow: 0 0 8px rgba(245,166,35,0.5); }
+    .panel-header .dot:nth-child(3) { background: #2a3a50; box-shadow: none; }
+    .panel-header .header-label {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ── Panel body ──────────────────────────────────────────────────────── */
+    .panel-body {
+      padding: 32px 32px 28px;
+    }
+
+    /* ── Threat badge ────────────────────────────────────────────────────── */
+    .threat-badge {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 24px;
+      animation: vf-reveal 0.55s 0.1s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .threat-icon {
+      width: 56px; height: 56px;
+      background: conic-gradient(from 180deg, #8c0929, #e5144b, #ff4d77, #e5144b, #8c0929);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      animation: vf-badge-in 0.65s 0.15s cubic-bezier(0.22,1,0.36,1) both;
+      box-shadow: 0 0 24px rgba(229,20,75,0.35);
+    }
+    .threat-title-group h1 {
+      font-family: var(--sans);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent-red);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+    .threat-title-group p {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      letter-spacing: 1px;
+    }
+
+    /* ── URL display ─────────────────────────────────────────────────────── */
+    .url-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent-red-dim);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      word-break: break-all;
+      line-height: 1.5;
+      animation: vf-reveal 0.55s 0.2s both;
+    }
+    .url-box .url-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .url-box .url-value { color: var(--accent-red); }
+
+    /* ── Risk score gauge ────────────────────────────────────────────────── */
+    .score-section {
+      margin-bottom: 20px;
+      animation: vf-reveal 0.55s 0.28s both;
+    }
+    .score-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .score-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .score-number {
+      font-family: var(--mono);
+      font-size: 26px;
+      font-weight: bold;
+      color: var(--accent-red);
+      animation: vf-number-count 0.6s 0.5s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .score-number span { font-size: 14px; color: var(--text-dim); }
+    .gauge-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .gauge-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-amber), var(--accent-red));
+      border-radius: 3px;
+      transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+      width: 0%;
+    }
+
+    /* ── Reasons list ────────────────────────────────────────────────────── */
+    .reasons-section {
+      margin-bottom: 24px;
+      animation: vf-reveal 0.55s 0.35s both;
+    }
+    .reasons-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      display: block;
+    }
+    .reason-item {
+      display: flex; gap: 10px;
+      padding: 8px 12px;
+      background: rgba(229,20,75,0.04);
+      border: 1px solid rgba(229,20,75,0.12);
+      border-radius: var(--radius);
+      margin-bottom: 6px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--text-primary);
+    }
+    .reason-bullet {
+      color: var(--accent-red);
+      font-family: var(--mono);
+      font-size: 10px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ── Actions ─────────────────────────────────────────────────────────── */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      animation: vf-reveal 0.55s 0.42s both;
+    }
+    .btn {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--radius);
+      padding: 13px 20px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .btn:hover  { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-back {
+      background: var(--accent-red);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(229,20,75,0.3);
+    }
+    .btn-back:hover {
+      background: #ff2060;
+      box-shadow: 0 6px 24px rgba(229,20,75,0.5);
+    }
+    .btn-proceed {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-proceed:hover {
+      border-color: #3a4a5c;
+      color: var(--text-primary);
+    }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    .panel-footer {
+      border-top: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      animation: vf-reveal 0.55s 0.48s both;
+    }
+    .footer-brand {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+    }
+    .footer-brand strong { color: var(--accent-red); font-style: normal; }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent-red);
+      box-shadow: 0 0 6px rgba(229,20,75,0.8);
+      animation: vf-pulse-border 1.5s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="panel" id="mainPanel">
+      <!-- Title bar -->
+      <div class="panel-header">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="header-label">VERIFYFIRST // THREAT INTERCEPTED</span>
+      </div>
+
+      <!-- Body -->
+      <div class="panel-body">
+        <!-- Badge + title -->
+        <div class="threat-badge">
+          <div class="threat-icon">⛔</div>
+          <div class="threat-title-group">
+            <h1>Phishing Detected</h1>
+            <p id="timestamp">ANALYZING THREAT SIGNATURE…</p>
+          </div>
+        </div>
+
+        <!-- URL -->
+        <div class="url-box">
+          <span class="url-label">Blocked URL</span>
+          <span class="url-value" id="urlDisplay">—</span>
+        </div>
+
+        <!-- Score -->
+        <div class="score-section">
+          <div class="score-header">
+            <span class="score-label">Threat Score</span>
+            <span class="score-number" id="scoreDisplay">0<span>/100</span></span>
+          </div>
+          <div class="gauge-track">
+            <div class="gauge-fill" id="gaugeFill"></div>
+          </div>
+        </div>
+
+        <!-- Reasons -->
+        <div class="reasons-section">
+          <span class="reasons-label">— Threat indicators —</span>
+          <div id="reasonsList"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button class="btn btn-back" id="btnBack">← Go Back</button>
+          <button class="btn btn-proceed" id="btnProceed">Proceed Anyway</button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="panel-footer">
+        <span class="footer-brand"><strong>VERIFY</strong>FIRST — Local Protection</span>
+        <span class="status-dot"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="warning.js"></script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VerifyFirst</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-base:     #060c18;
+      --bg-card:     #0b1422;
+      --bg-line:     #0e1a2e;
+      --accent-red:  #e5144b;
+      --accent-teal: #00c896;
+      --accent-amb:  #f5a623;
+      --accent-blue: #4a9eff;
+      --border:      #162030;
+      --text:        #dce8f5;
+      --muted:       #5a7090;
+      --dim:         #2a3850;
+      --mono:        'Share Tech Mono', 'Courier New', monospace;
+      --sans:        'Rajdhani', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 320px;
+      background: var(--bg-base);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow-x: hidden;
+    }
+
+    /* Grid bg */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        linear-gradient(rgba(22,32,48,0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(22,32,48,0.5) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .wrap { position: relative; z-index: 1; }
+
+    /* ── Header ──────────────────────────────────────────────────────────── */
+    header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .brand-icon {
+      width: 28px; height: 28px;
+      background: conic-gradient(from 180deg, #8c0929, #e5144b, #ff4d77, #e5144b);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      box-shadow: 0 0 12px rgba(229,20,75,0.3);
+    }
+    .brand-name {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .brand-name em { color: var(--accent-red); font-style: normal; }
+    .status-pill {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+    .pill-online  { background: rgba(0,200,150,0.1); color: var(--accent-teal); border: 1px solid rgba(0,200,150,0.2); }
+    .pill-offline { background: rgba(229,20,75,0.1); color: var(--accent-red); border: 1px solid rgba(229,20,75,0.2); }
+
+    /* ── Current page result ─────────────────────────────────────────────── */
+    .current-section {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .result-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+      background: var(--card-accent, var(--accent-blue));
+    }
+
+    .result-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 8px;
+    }
+    .result-icon {
+      font-size: 20px; flex-shrink: 0;
+    }
+    .result-cat {
+      font-size: 14px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--card-accent, var(--accent-blue));
+    }
+    .result-score {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--card-accent, var(--accent-blue));
+    }
+    .result-score span { font-size: 11px; color: var(--muted); }
+
+    .result-url {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      word-break: break-all;
+      line-height: 1.4;
+      border-top: 1px solid var(--dim);
+      padding-top: 8px;
+      margin-top: 4px;
+    }
+
+    .no-result {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      padding: 16px 0;
+      letter-spacing: 1px;
+    }
+
+    /* ── Stats bar ───────────────────────────────────────────────────────── */
+    .stats-section {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+    .stat-cell {
+      background: var(--bg-base);
+      padding: 8px;
+      text-align: center;
+    }
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: bold;
+      display: block;
+    }
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-top: 2px;
+    }
+    .safe-val    { color: var(--accent-teal); }
+    .sus-val     { color: var(--accent-amb); }
+    .danger-val  { color: var(--accent-red); }
+
+    /* ── Recent scans ────────────────────────────────────────────────────── */
+    .recent-section {
+      padding: 12px 16px 14px;
+    }
+    .recent-list { list-style: none; }
+    .recent-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--dim);
+      font-size: 12px;
+    }
+    .recent-item:last-child { border-bottom: none; }
+    .recent-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    .dot-safe    { background: var(--accent-teal); }
+    .dot-sus     { background: var(--accent-amb); }
+    .dot-danger  { background: var(--accent-red); }
+    .dot-unknown { background: var(--muted); }
+    .recent-url {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .recent-score {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
+      flex-shrink: 0;
+    }
+
+    .empty-recent {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
+      text-align: center;
+      padding: 10px 0;
+      letter-spacing: 1px;
+    }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    footer {
+      padding: 8px 16px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-text {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--dim);
+      letter-spacing: 1.5px;
+    }
+    .cache-badge {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--dim);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    /* ── Animations ──────────────────────────────────────────────────────── */
+    @keyframes vf-pop {
+      from { opacity:0; transform:scale(0.97) translateY(6px); }
+      to   { opacity:1; transform:scale(1) translateY(0); }
+    }
+    .wrap { animation: vf-pop 0.2s cubic-bezier(0.22,1,0.36,1) both; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="brand-icon">🛡</div>
+        <span class="brand-name"><em>Verify</em>First</span>
+      </div>
+      <span class="status-pill pill-offline" id="backendStatus">CONNECTING…</span>
+    </header>
+
+    <!-- Current page -->
+    <div class="current-section">
+      <span class="section-label">— Current page —</span>
+      <div id="currentResult">
+        <div class="no-result" id="noResult">No analysis yet for this tab</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-section">
+      <div class="stat-cell">
+        <span class="stat-value safe-val"   id="statSafe">—</span>
+        <span class="stat-label">Safe</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-value sus-val"    id="statSus">—</span>
+        <span class="stat-label">Suspicious</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-value danger-val" id="statDanger">—</span>
+        <span class="stat-label">Blocked</span>
+      </div>
+    </div>
+
+    <!-- Recent scans -->
+    <div class="recent-section">
+      <span class="section-label">— Recent scans —</span>
+      <ul class="recent-list" id="recentList">
+        <li class="empty-recent">No scans this session</li>
+      </ul>
+    </div>
+
+    <footer>
+      <span class="footer-text">LOCAL PROTECTION ACTIVE</span>
+      <span class="cache-badge" id="cacheSize">cache: 0</span>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

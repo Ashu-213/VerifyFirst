@@ -22,10 +22,8 @@ ENV/
 
 # VerifyFirst specific
 backend/verifyfirst.db
-backend/model.pkl
 backend/__pycache__/
 backend/data/malicious_phish.csv
-backend/phishing_urls.csv
 
 # OS
 .DS_Store

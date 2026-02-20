@@ -19,21 +19,39 @@ Real-time phishing detection using ML trained on **651k real URLs**. Runs 100% l
 pip install -r requirements.txt
 ```
 
-### 2. Download Kaggle Dataset
-**Get API key:** https://www.kaggle.com/settings → API → Create Token  
-**Place `kaggle.json` at:** `C:\Users\<You>\.kaggle\kaggle.json` (Windows) or `~/.kaggle/` (Mac/Linux)
+### 2. Setup Dataset Files
 
+**Download the dataset from Kaggle:**
+
+🔗 **Dataset:** https://www.kaggle.com/datasets/sid321axn/malicious-urls-dataset
+
+**Option 1: Download via Browser**
+1. Visit the Kaggle dataset link above
+2. Click **Download** (you may need to create a free Kaggle account)
+3. Extract the downloaded zip file
+4. Copy `malicious_phish.csv` to `backend/data/malicious_phish.csv`
+
+**Option 2: Download via Kaggle CLI**
+1. Get API key: https://www.kaggle.com/settings → API → Create Token
+2. Place `kaggle.json` at: `C:\Users\<You>\.kaggle\kaggle.json` (Windows) or `~/.kaggle/` (Mac/Linux)
+3. Run:
+   ```bash
+   kaggle datasets download -d sid321axn/malicious-urls-dataset -p backend/data --unzip
+   ```
+
+**Verify setup:**
 ```bash
-kaggle datasets download -d sid321axn/malicious-urls-dataset -p backend/data --unzip
+# Should exist: backend/data/malicious_phish.csv (651k URLs)
 ```
 
-### 3. Generate Icons & Train Model
+### 3. Generate Icons, Blacklist & Train Model
 ```bash
 python generate_icons.py
 cd backend
+python extract_phishing_urls.py
 python train_model.py
 ```
-*Training takes ~60 seconds on 651k URLs. Expected accuracy: 86.84%*
+*Creates phishing URL blacklist (10k URLs) and trains model (~60 seconds, 86.84% accuracy)*
 
 ### 4. Start Backend
 ```bash
@@ -109,7 +127,8 @@ extension/
 |-------|-----|
 | Backend offline | Run `python backend/main.py` |
 | `model.pkl` not found | Run `python backend/train_model.py` |
-| Dataset missing | Download Kaggle dataset (step 2) |
+| Dataset missing | Download from Kaggle (see step 2) |
+| `phishing_urls.csv` not found | Run `python backend/extract_phishing_urls.py` |
 | Extension not working | Check `chrome://extensions` for errors |
 
 **See [DOCUMENTATION.md](DOCUMENTATION.md) for API reference, advanced config, and detailed guides.**

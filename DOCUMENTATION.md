@@ -244,6 +244,16 @@ pip install -r requirements.txt
 ```
 
 ### Step 2: Download Training Dataset
+
+**Dataset:** https://www.kaggle.com/datasets/sid321axn/malicious-urls-dataset
+
+**Option A: Download via Browser (Easier)**
+1. Visit the Kaggle dataset link above
+2. Click **Download** (requires free Kaggle account)
+3. Extract the downloaded zip file
+4. Copy `malicious_phish.csv` to `backend/data/malicious_phish.csv`
+
+**Option B: Download via Kaggle CLI**
 ```bash
 # Set up Kaggle API credentials (kaggle.json)
 # Place in: C:\Users\<Username>\.kaggle\kaggle.json (Windows)

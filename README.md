@@ -65,9 +65,9 @@ python main.py
 3. Click **Load unpacked** → Select `extension/` folder
 
 ### 6. Test It
-- **Safe:** https://github.com
+- **Safe:** https://github.com, https://microsoft.com, https://google.com
 - **Dangerous:** https://meganmacylesolutions.com/secure/login.onlinebanking.suntrust.com/online.htm  
-- **Suspicious:** http://192.168.1.1/admin/login
+- **Suspicious:** http://account-verify-secure.example.com/login, http://paypal-support-center.tk/verify
 
 ---
 

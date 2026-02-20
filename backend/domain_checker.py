@@ -17,7 +17,7 @@ except ImportError:
     WHOIS_AVAILABLE = False
 
 
-WHOIS_TIMEOUT_SECONDS = 1.5
+WHOIS_TIMEOUT_SECONDS = 3.0  # Increased timeout for legitimate domains with slow WHOIS servers
 
 
 def get_domain_info(url: str) -> dict:

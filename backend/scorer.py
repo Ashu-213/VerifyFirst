@@ -56,15 +56,22 @@ def analyze(url: str, domain_info: dict) -> dict:
     newly = domain_info.get("newly_registered", False)
     whois_err = domain_info.get("whois_error")
 
-    if newly or (age is not None and age < 7):
-        score += 20
-        reasons.append(f"Domain very recently registered ({age} days old)")
-    elif newly or (age is not None and age < 30):
-        score += 10
-        reasons.append(f"Domain recently registered ({age} days old)")
+    if age is not None:
+        # We have actual age data
+        if age < 7:
+            score += 20
+            reasons.append(f"Domain very recently registered ({age} days old)")
+        elif age < 30:
+            score += 10
+            reasons.append(f"Domain recently registered ({age} days old)")
     elif whois_err and "timeout" in str(whois_err).lower():
+        # WHOIS timed out - treat as mildly suspicious but don't overpenalize
+        score += 5
+        reasons.append("WHOIS lookup timed out — unable to verify domain age")
+    elif newly:
+        # No age but marked as newly registered (shouldn't happen, but handle it)
         score += 10
-        reasons.append("WHOIS lookup timed out — domain suspicious")
+        reasons.append("Domain appears to be newly registered")
 
     # ── 4. Suspicious keywords ────────────────────────────────────────────────
     kw_count = features["suspicious_keyword_count"]

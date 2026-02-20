@@ -7,11 +7,18 @@ import ipaddress
 from urllib.parse import urlparse
 
 
+# Keywords that are suspicious in general contexts
 SUSPICIOUS_KEYWORDS = [
     "login", "verify", "bank", "update", "secure", "account",
     "signin", "password", "credential", "confirm", "billing",
-    "paypal", "ebay", "amazon", "apple", "microsoft", "google",
     "support", "suspended", "unusual", "validate", "authenticate"
+]
+
+# Brand names that are suspicious when combined with other keywords
+# or when appearing in subdomains/paths (not root domain)
+BRAND_KEYWORDS = [
+    "paypal", "ebay", "amazon", "apple", "microsoft", "google",
+    "facebook", "netflix", "instagram", "twitter"
 ]
 
 
@@ -41,12 +48,26 @@ def extract_features(url: str) -> dict:
 
     # 5. Suspicious keyword count
     url_lower = url.lower()
-    features["suspicious_keyword_count"] = sum(
-        1 for kw in SUSPICIOUS_KEYWORDS if kw in url_lower
-    )
-    features["suspicious_keywords_found"] = [
-        kw for kw in SUSPICIOUS_KEYWORDS if kw in url_lower
-    ]
+    keywords_found = []
+    
+    # Check general suspicious keywords
+    for kw in SUSPICIOUS_KEYWORDS:
+        if kw in url_lower:
+            keywords_found.append(kw)
+    
+    # Check brand keywords - only flag if NOT the actual brand's root domain
+    if parsed and parsed.hostname:
+        root_domain = _get_root_domain(parsed.hostname)
+        for brand in BRAND_KEYWORDS:
+            # Only flag brand names if they appear in suspicious contexts:
+            # - In subdomain (e.g., paypal.evil.com)
+            # - In path (e.g., evil.com/paypal-login)
+            # - NOT if it's the actual brand domain (e.g., paypal.com, microsoft.com)
+            if brand in url_lower and brand != root_domain:
+                keywords_found.append(brand)
+    
+    features["suspicious_keyword_count"] = len(keywords_found)
+    features["suspicious_keywords_found"] = keywords_found
 
     # 6. HTTPS usage
     if parsed:
@@ -146,6 +167,17 @@ def _subdomain_depth(parsed) -> int:
     parts = parsed.hostname.split(".")
     # e.g. www.evil.legit.com → 4 parts → depth 2 (subtract root + tld + domain)
     return max(0, len(parts) - 2)
+
+
+def _get_root_domain(hostname: str) -> str:
+    """Extract root domain from hostname (e.g., 'github' from 'www.github.com')."""
+    if not hostname:
+        return ""
+    parts = hostname.split(".")
+    if len(parts) >= 2:
+        # Return second-to-last part (domain name without TLD)
+        return parts[-2]
+    return hostname
 
 
 def _subdomain_has_digits(parsed) -> int:

@@ -33,7 +33,7 @@ from scorer import analyze, load_model
 
 CSV_PATH = os.path.join(os.path.dirname(__file__), "phishing_urls.csv")
 
-ANALYSIS_TIMEOUT = 2.0   # seconds — hard ceiling per request
+ANALYSIS_TIMEOUT = 4.0   # seconds — hard ceiling per request
 
 
 # ── Lifespan ───────────────────────────────────────────────────────────────────
